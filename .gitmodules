@@ -1,0 +1,3 @@
+[submodule "shdr"]
+	path = shdr
+	url = https://github.com/illus0r/shdr.git
