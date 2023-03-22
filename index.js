@@ -23,8 +23,21 @@ let pr = new Pr(gl,loadText('./shader.frag'))
 let prDr = new Pr(gl)
 
 let u_tx=[]//.map(_=>new Tx(gl, tx_opt))
-window.addEventListener('resize',resize, true)
-window.dispatchEvent(new Event('resize'))
+// window.addEventListener('resize',resize, true)
+// window.dispatchEvent(new Event('resize'))
+// resize()
+
+let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, (tx)=>{
+	gl.canvas.width = tx.w
+	gl.canvas.height = tx.h
+	// resize()
+	// if(u_tx.length > 0){
+	// 	u_tx.forEach(tx=>gl.deleteTexture(tx))
+	// }
+	// let [w,h] = rsz(gl,tx.w,tx.h)
+	u_tx=[0,0].map((_,i)=>new Tx(gl, {w:tx.w,h:tx.h,loc:i}))
+	frame()
+})
 
 window.addEventListener('mousemove', e=>{
 	let [w,h] = [gl.canvas.width, gl.canvas.height]
@@ -36,6 +49,75 @@ let timePrev=timeInit
 let timeNew=timeInit
 let u_frame=0
 
+let state = 'select' // or 'draw'
+let rectSrc = [0,0,0,0]
+let rectDst = [0,0,0,0]
+let div = document.querySelector('.select')
+
+
+// first select region, then draw
+//
+// select region
+let mousePrev = [0,0]
+gl.enable(gl.SCISSOR_TEST)
+gl.enable(gl.BLEND)
+
+document.addEventListener('mousedown', e=>{
+	if(state == 'select'){
+		rectSrc[0] = rectSrc[2] = e.pageX
+		rectSrc[1] = rectSrc[3] = e.pageY
+		mousePrev = [e.pageX, e.pageY]
+		div.style.display = 'block'
+		updateDiv()
+	}
+	else if(state == 'draw'){
+		div.style.display = 'none'
+	}
+})
+document.addEventListener('mousemove', e=>{
+	if(state == 'select'){
+		rectSrc[2] = e.pageX
+		rectSrc[3] = e.pageY
+		updateDiv()
+	}
+	else if(state == 'draw'){
+		// if mouse is down, draw
+		if(e.buttons == 1){
+			// get mouse movement
+			let dx=e.pageX-mousePrev[0]
+			let dy=e.pageY-mousePrev[1]
+			let len = Math.hypot(dx,dy) * 4
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+			for(let i=0;i<len;i++){
+				rectDst[0] += dx/len
+				rectDst[1] += dy/len
+				rectDst[2] += dx/len
+				rectDst[3] += dy/len
+				gl.scissor(rectDst[0], gl.canvas.height-rectDst[3], rectDst[2]-rectDst[0], rectDst[3]-rectDst[1])
+				frame()
+			}
+		}
+	}
+	mousePrev = [e.pageX, e.pageY]
+})
+document.addEventListener('mouseup', e=>{
+	if(state == 'select'){
+		[rectSrc[0], rectSrc[2]] = [Math.min(rectSrc[0], rectSrc[2]), Math.max(rectSrc[0], rectSrc[2])];
+		[rectSrc[1], rectSrc[3]] = [Math.min(rectSrc[1], rectSrc[3]), Math.max(rectSrc[1], rectSrc[3])];
+		rectDst = [...rectSrc]
+		state = 'draw'
+	}
+	else if(state == 'draw'){
+		state = 'select'
+	}
+})
+
+function updateDiv(){
+	div.style.left = Math.min(rectSrc[0], rectSrc[2]) + 'px'
+	div.style.top = Math.min(rectSrc[1], rectSrc[3]) + 'px'
+	div.style.width = Math.abs(rectSrc[2] - rectSrc[0]) + 'px'
+	div.style.height = Math.abs(rectSrc[3] - rectSrc[1]) + 'px'
+}
 
 function frame() {
 	timePrev=timeNew
@@ -51,6 +133,9 @@ function frame() {
 			'frame': u_frame,
 			'mouse': mouse,
 			'rndjs': rndjs,
+			'img': u_tx_img,
+			'rectSrc': rectSrc,
+			'rectDst': rectDst,
 			'palette': palette,
 		})
 		pr.draw(u_tx[1])
@@ -59,7 +144,7 @@ function frame() {
 
 		prDr.uf({
 			'time': time,
-			'res': [u_tx[0].w,u_tx[0].h],
+			'res': [gl.canvas.width,gl.canvas.height],
 			'tx': u_tx[0],
 			'frame': u_frame,
 			'rndjs': rndjs,
@@ -69,7 +154,6 @@ function frame() {
 	else{ 
 		timeInit+=timeNew-timePrev
 	}
-	requestAnimationFrame(frame)
 }
 frame()
 
@@ -80,13 +164,13 @@ document.addEventListener('keydown', (event) => {
 	}
 }, false)
 
-function resize(){
-	if(u_tx.length > 0){
-		u_tx.forEach(tx=>gl.deleteTexture(tx))
-	}
-	let [w,h] = rsz(gl)
-	u_tx=[0,0].map((_,i)=>new Tx(gl, {w:w,h:h,loc:i}))
-}
+// function resize(){
+// 	if(u_tx.length > 0){
+// 		u_tx.forEach(tx=>gl.deleteTexture(tx))
+// 	}
+// 	let [w,h] = rsz(gl)
+// 	u_tx=[0,0].map((_,i)=>new Tx(gl, {w:w,h:h,loc:i}))
+// }
 
 function saveImage (e){
 	let downloadLink = document.createElement('a');
