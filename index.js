@@ -46,7 +46,8 @@ let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, (tx)=>{/
 	for(let i=0;i<2;i++){
 		pr.uf({
 			'res': [u_tx[0].w,u_tx[0].h],
-			'tx': u_tx[0],
+			// 'tx': u_tx[0],
+			'tx': tx,
 			'img': tx,
 			'rectSrc': rectSrc,
 			'rectDst': rectDst,

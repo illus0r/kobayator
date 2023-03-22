@@ -16,7 +16,7 @@ out vec4 o;
 void main(){
 	/* vec2 uv = (gl_FragCoord.xy*2.-res)/res.y; */
 	vec2 uv=gl_FragCoord.xy/res.xy;
-	o=texture(img,uv);
+	o=texture(tx,uv);
 	/* if( */
 	/* 		gl_FragCoord.x>rectDst.x&& */
 	/* 		gl_FragCoord.x<rectDst.z&& */
@@ -24,7 +24,7 @@ void main(){
 	/* 		(res.y-gl_FragCoord.y)<rectDst.w */
 	/* ){ */
 		vec2 duv = (rectSrc.xy-rectDst.xy)/res;
-		o=texture(img,uv+duv*vec2(1,-1));
+		o=texture(tx,uv+duv*vec2(1,1));
 		/* o*=.8; */
 		/* o.r = duv.x; */
 		/* o.g = duv.y; */
