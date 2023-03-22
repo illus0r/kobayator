@@ -24,7 +24,7 @@ void main(){
 	/* 		(res.y-gl_FragCoord.y)<rectDst.w */
 	/* ){ */
 		vec2 duv = (rectSrc.xy-rectDst.xy)/res;
-		o=texture(tx,uv+duv*vec2(1,1));
+		o=texture(tx,uv+duv*vec2(1,-1));
 		/* o*=.8; */
 		/* o.r = duv.x; */
 		/* o.g = duv.y; */

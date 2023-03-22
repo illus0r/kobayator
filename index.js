@@ -129,7 +129,6 @@ document.addEventListener('mousemove', e=>{
 				})
 				pr.draw(u_tx[1])
 			}
-			u_tx.reverse()
 			frame()
 		}
 	}
@@ -143,6 +142,15 @@ document.addEventListener('mouseup', e=>{
 		state = 'draw'
 	}
 	else if(state == 'draw'){
+		gl.disable(gl.SCISSOR_TEST)
+		gl.disable(gl.BLEND)
+		prDr.uf({
+			'res': [gl.canvas.width,gl.canvas.height],
+			'tx': u_tx[1],
+		})
+		prDr.draw(u_tx[0])
+		u_tx.reverse()
+
 		state = 'select'
 	}
 })
@@ -166,7 +174,7 @@ function frame(init) {// ← 3
 		console.log('loc',u_tx[0].loc)
 		prDr.uf({
 			'res': [gl.canvas.width,gl.canvas.height],
-			'tx': u_tx[0],
+			'tx': u_tx[1],
 		})
 		prDr.draw()
 	}
