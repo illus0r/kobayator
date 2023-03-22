@@ -128,8 +128,8 @@ document.addEventListener('mousemove', e=>{
 					'rectDst': rectDst,
 				})
 				pr.draw(u_tx[1])
-				u_tx.reverse()
 			}
+			u_tx.reverse()
 			frame()
 		}
 	}
@@ -165,11 +165,8 @@ function frame(init) {// ← 3
 		gl.disable(gl.BLEND)
 		console.log('loc',u_tx[0].loc)
 		prDr.uf({
-			'time': time,
 			'res': [gl.canvas.width,gl.canvas.height],
 			'tx': u_tx[0],
-			'frame': u_frame,
-			'rndjs': rndjs,
 		})
 		prDr.draw()
 	}
