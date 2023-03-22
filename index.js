@@ -38,7 +38,7 @@ let u_tx=[]//.map(_=>new Tx(gl, tx_opt))
 // window.dispatchEvent(new Event('resize'))
 // resize()
 
-let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, txCallback)
+let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR, callback:txCallback})
 
 function txCallback(tx){// ← 1
 	gl.canvas.width = tx.w
@@ -233,7 +233,7 @@ function handleDrop(event) {
 		console.log(dataURI); // Do something with the data URI
 		// remove old texture
 		gl.deleteTexture(u_tx_img)
-		u_tx_img = new Tx(gl, {src: dataURI, loc:3, filter:gl.LINEAR },txCallback)
+		u_tx_img = new Tx(gl, {src: dataURI, loc:3, filter:gl.LINEAR, callback:txCallback})
 	});
 
 	reader.readAsDataURL(file);
