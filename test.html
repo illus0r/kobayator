@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Drag and Drop Image Uploader</title>
+  <style>
+    #dropzone {
+      width: 200px;
+      height: 200px;
+      border: 2px dashed black;
+      margin: 20px;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="dropzone">Drop an image here</div>
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    dropzone.addEventListener('dragover', handleDragOver);
+    dropzone.addEventListener('drop', handleDrop);
+
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      const reader = new FileReader();
+
+      reader.addEventListener('load', () => {
+        const dataURI = reader.result;
+        console.log(dataURI); // Do something with the data URI
+      });
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
+

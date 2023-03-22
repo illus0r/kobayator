@@ -38,7 +38,9 @@ let u_tx=[]//.map(_=>new Tx(gl, tx_opt))
 // window.dispatchEvent(new Event('resize'))
 // resize()
 
-let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, (tx)=>{// ← 1
+let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, txCallback)
+
+function txCallback(tx){// ← 1
 	gl.canvas.width = tx.w
 	gl.canvas.height = tx.h
 	u_tx=[0,0].map((_,i)=>new Tx(gl, {w:tx.w,h:tx.h,loc:i}))
@@ -57,7 +59,7 @@ let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, (tx)=>{/
 	}
 
 	frame('init')
-})
+}
 
 window.addEventListener('mousemove', e=>{
 	let [w,h] = [gl.canvas.width, gl.canvas.height]
@@ -212,3 +214,27 @@ function saveImage (e){
 // save only if key S is pressed
 document.addEventListener('keydown', e=>e.code=='KeyS'?saveImage():0)
 
+
+const dropzone = document.querySelector('body');
+dropzone.addEventListener('dragover', handleDragOver);
+dropzone.addEventListener('drop', handleDrop);
+
+function handleDragOver(event) {
+	event.preventDefault();
+}
+
+function handleDrop(event) {
+	event.preventDefault();
+	const file = event.dataTransfer.files[0];
+	const reader = new FileReader();
+
+	reader.addEventListener('load', () => {
+		const dataURI = reader.result;
+		console.log(dataURI); // Do something with the data URI
+		// remove old texture
+		gl.deleteTexture(u_tx_img)
+		u_tx_img = new Tx(gl, {src: dataURI, loc:3, filter:gl.LINEAR },txCallback)
+	});
+
+	reader.readAsDataURL(file);
+}
