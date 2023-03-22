@@ -20,23 +20,42 @@ console.log('palette:',palette)
 
 let gl = new Gl('canvas')
 let pr = new Pr(gl,loadText('./shader.frag'))
-let prDr = new Pr(gl)
+let prDr = new Pr(gl,`#version 300 es
+			precision highp float;
+			uniform sampler2D tx;
+			uniform vec2 res;
+			uniform float time;
+			out vec4 o;
+			void main(){
+				vec2 uv = gl_FragCoord.xy/res;
+				o = texture(tx,fract(uv));
+				// o=vec4(0.,1.,0.,1.);
+				o.a=1.;
+			}`)
 
 let u_tx=[]//.map(_=>new Tx(gl, tx_opt))
 // window.addEventListener('resize',resize, true)
 // window.dispatchEvent(new Event('resize'))
 // resize()
 
-let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, (tx)=>{
+let u_tx_img = new Tx(gl, {src: './img.jpg', loc:3, filter:gl.LINEAR }, (tx)=>{// ← 1
 	gl.canvas.width = tx.w
 	gl.canvas.height = tx.h
-	// resize()
-	// if(u_tx.length > 0){
-	// 	u_tx.forEach(tx=>gl.deleteTexture(tx))
-	// }
-	// let [w,h] = rsz(gl,tx.w,tx.h)
 	u_tx=[0,0].map((_,i)=>new Tx(gl, {w:tx.w,h:tx.h,loc:i}))
-	frame()
+
+	for(let i=0;i<2;i++){
+		pr.uf({
+			'res': [u_tx[0].w,u_tx[0].h],
+			'tx': u_tx[0],
+			'img': tx,
+			'rectSrc': rectSrc,
+			'rectDst': rectDst,
+		})
+		pr.draw(u_tx[1])
+		u_tx.reverse()
+	}
+
+	frame('init')
 })
 
 window.addEventListener('mousemove', e=>{
@@ -59,8 +78,6 @@ let div = document.querySelector('.select')
 //
 // select region
 let mousePrev = [0,0]
-gl.enable(gl.SCISSOR_TEST)
-gl.enable(gl.BLEND)
 
 document.addEventListener('mousedown', e=>{
 	if(state == 'select'){
@@ -80,22 +97,39 @@ document.addEventListener('mousemove', e=>{
 		rectSrc[3] = e.pageY
 		updateDiv()
 	}
-	else if(state == 'draw'){
+	else if(state == 'draw'){// ← 2
 		// if mouse is down, draw
 		if(e.buttons == 1){
 			// get mouse movement
 			let dx=e.pageX-mousePrev[0]
 			let dy=e.pageY-mousePrev[1]
 			let len = Math.hypot(dx,dy) * 4
-			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+			gl.enable(gl.SCISSOR_TEST)
+			// gl.enable(gl.BLEND)
+			// let alpha = 1.
+			// gl.blendColor(alpha, alpha, alpha, .5);
+			// gl.blendFunc(gl.CONSTANT_COLOR, gl.ONE_MINUS_CONSTANT_COLOR);
+
 			for(let i=0;i<len;i++){
 				rectDst[0] += dx/len
 				rectDst[1] += dy/len
 				rectDst[2] += dx/len
 				rectDst[3] += dy/len
+
 				gl.scissor(rectDst[0], gl.canvas.height-rectDst[3], rectDst[2]-rectDst[0], rectDst[3]-rectDst[1])
-				frame()
+
+				pr.uf({
+					'res': [u_tx[0].w,u_tx[0].h],
+					'tx': u_tx[0],
+					'img': u_tx_img,
+					'rectSrc': rectSrc,
+					'rectDst': rectDst,
+				})
+				pr.draw(u_tx[1])
+				u_tx.reverse()
 			}
+			frame()
 		}
 	}
 	mousePrev = [e.pageX, e.pageY]
@@ -119,29 +153,16 @@ function updateDiv(){
 	div.style.height = Math.abs(rectSrc[3] - rectSrc[1]) + 'px'
 }
 
-function frame() {
+function frame(init) {// ← 3
 	timePrev=timeNew
 	timeNew=+new Date()
 	let time = (timeNew-timeInit)/1000
 	u_frame++
 
 	if(isPlaying && u_tx.length > 0){
-		pr.uf({
-			'time': time,
-			'res': [u_tx[0].w,u_tx[0].h],
-			'tx': u_tx[0],
-			'frame': u_frame,
-			'mouse': mouse,
-			'rndjs': rndjs,
-			'img': u_tx_img,
-			'rectSrc': rectSrc,
-			'rectDst': rectDst,
-			'palette': palette,
-		})
-		pr.draw(u_tx[1])
-
-		u_tx.reverse()
-
+		gl.disable(gl.SCISSOR_TEST)
+		gl.disable(gl.BLEND)
+		console.log('loc',u_tx[0].loc)
 		prDr.uf({
 			'time': time,
 			'res': [gl.canvas.width,gl.canvas.height],
@@ -155,7 +176,6 @@ function frame() {
 		timeInit+=timeNew-timePrev
 	}
 }
-frame()
 
 document.addEventListener('keydown', (event) => {
 	if (event.code === 'Space') {

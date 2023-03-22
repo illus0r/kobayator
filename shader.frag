@@ -5,6 +5,7 @@ uniform sampler2D img;
 uniform float frame;
 uniform float pass;
 uniform float time;
+uniform float alpha;
 uniform vec2 res;
 uniform vec4 rectSrc;
 uniform vec4 rectDst;
@@ -29,22 +30,5 @@ void main(){
 		/* o.g = duv.y; */
 	/* } */
 
-	o.a=.01;
-	/* vec2 uvI = uv; */
-	
-	/* mat2 z = mat2(uv,-uv.y,uv.x); */
-
-	/* mat2 a = mat2(mouse,0,0); */
-	/* a[1]=a[0].yx*vec2(-1,1); */
-
-	/* for(int i=0;i<8;i++){ */
-	/* 	z *= z*z; */
-	/* 	z = z + a; */
-	/* } */
-
-	/* uv = z[0]; */
-
-	/* /1* o.rg=fract(uv+time); *1/ */
-	/* o+=fract(length(uv.y)+time+atan(uvI.y,uvI.x)/3.1415/2.)/(length(uv)); */
 	o.a=1.;
 }
